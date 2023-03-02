@@ -104,10 +104,10 @@ func (c *Endhouse) Run() {
 
 		c.done[j.Name] = make(chan bool, 1)
 		if j.Schedule.Every > 0 {
-			log.Printf("found job %s schedule every: %d seconds\n", j.Name, j.Schedule.Every)
+			log.Printf("found job %s endpoint: %s schedule every: %d seconds\n", j.Name, j.Executor.URL, j.Schedule.Every)
 			go c.RepeatTask(j)
 		} else {
-			log.Printf("found job %s schedule at: %s\n", j.Name, j.Schedule.At)
+			log.Printf("found job %s endpoint: %s schedule at: %s\n", j.Name, j.Executor.URL, j.Schedule.At)
 			go c.ScheduleTask(j)
 		}
 
