@@ -1,0 +1,28 @@
+# http header to include in the request
+headers:
+  apikey: "$apikey"
+  user-agent: "endhouse/v1.0.0"
+
+notifier:
+  slack: slack-hook
+
+tasks:
+- name: uptime
+  executor:
+    url: domain.com
+
+    # beside url, can also run any arbitrary command with:
+    # script: |
+    #   any shell command or script here
+
+  schedule:
+    # does the task need to run when starting sheduler
+    # If yes, the job will be fired once right on starting
+    run_on_start: true
+
+    # define when to run, there are 2 syntax, using `every` or `at`
+    # endhouse recond use `every` instead of `at`
+    every: 5 # in second mean every hour.
+
+    # or using cron syntax
+    # at: * 0 * * *
