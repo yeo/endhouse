@@ -114,7 +114,34 @@ func (c *Endhouse) Run() {
 		total += 1
 	}
 
-	c.Slacker.Send(fmt.Sprintf(`%s booted at %s. load %d jobs in %s`, appname, time.Now(), total, time.Now().Sub(t0)))
+	sections := []MessageBlock{
+		MessageBlock{
+			Type: "Section",
+			Fields: []MessageText{
+				MessageText{
+					Type: "mrkdwn",
+					Text: "*Boot time*",
+				},
+
+				MessageText{
+					Type: "mrkdwn",
+					Text: "*Job loaded*",
+				},
+
+				MessageText{
+					Type: "mrkdwn",
+					Text: fmt.Sprintf("%s", time.Now().Sub(t0)),
+				},
+
+				MessageText{
+					Type: "mrkdwn",
+					Text: fmt.Sprintf("%d", total),
+				},
+			},
+		},
+	}
+
+	c.Slacker.Send(fmt.Sprintf(`*%s* booted at %s`, appname, time.Now()), sections)
 
 	c.Cron.Start()
 }
@@ -139,7 +166,7 @@ func (c *Endhouse) RepeatTask(t *Task) {
 }
 
 func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
-	log.Printf("execute task %s at %s", t0)
+	log.Printf("execute task %s at %s", t.Name, t0)
 	req := c.Client.R()
 
 	for k, v := range t.Executor.Headers {
@@ -149,11 +176,46 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 	resp, err := req.Get(t.Executor.URL)
 
 	if err != nil {
-		log.Printf("error pushing to url %s: %s. Resp %s\n", t.Executor.URL, err, resp)
-	}
+		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
 
-	log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp, resp)
-	c.Slacker.Send(fmt.Sprintf("job %s performed in %s respond status %d", t.Name, time.Now().Sub(t0), resp.StatusCode()))
+		c.Slacker.Send(fmt.Sprintf(":bangbang: error pushing to url %s: %s. Resp %s\n", t.Executor.URL, err, resp), []MessageBlock{})
+	} else {
+		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
+
+		sections := []MessageBlock{
+			MessageBlock{
+				Type: "section",
+				Fields: []MessageText{
+					MessageText{
+						Type: "mrkdwn",
+						Text: fmt.Sprintf("*Job*\n%s", t.Name),
+					},
+
+					MessageText{
+						Type: "mrkdwn",
+						Text: "*Result*\nSucced",
+					},
+				},
+			},
+
+			MessageBlock{
+				Type: "section",
+				Fields: []MessageText{
+					MessageText{
+						Type: "mrkdwn",
+						Text: fmt.Sprintf("*Duration*\n%s", time.Now().Sub(t0)),
+					},
+
+					MessageText{
+						Type: "mrkdwn",
+						Text: fmt.Sprintf("*Status*\n%d", resp.StatusCode()),
+					},
+				},
+			},
+		}
+
+		c.Slacker.Send(fmt.Sprintf(":ship: job *%s* finished with resp:\n\n>%s\n", t.Name, resp), sections)
+	}
 }
 
 func (c *Endhouse) Wait() {

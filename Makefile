@@ -1,4 +1,4 @@
-version ?= v1.0.0
+version ?= v1.2.0
 
 build:
 	GOOS=linux GOARCH=amd64 go build -o out/endhouse .
