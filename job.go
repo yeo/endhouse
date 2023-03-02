@@ -102,7 +102,7 @@ func (c *Endhouse) Run() {
 			go c.ExecuteTask(j, time.Now())
 		}
 
-		c.done[j.Name] = make(chan bool)
+		c.done[j.Name] = make(chan bool, 1)
 		if j.Schedule.Every > 0 {
 			log.Printf("found job %s schedule every: %d seconds\n", j.Name, j.Schedule.Every)
 			go c.RepeatTask(j)
@@ -115,9 +115,14 @@ func (c *Endhouse) Run() {
 	}
 
 	c.Slacker.Send(fmt.Sprintf(`%s booted at %s. load %d jobs in %s`, appname, time.Now(), total, time.Now().Sub(t0)))
+
+	c.Cron.Start()
 }
 
 func (c *Endhouse) ScheduleTask(t *Task) {
+	c.Cron.AddFunc(t.Schedule.At, func() {
+		c.ExecuteTask(t, time.Now())
+	})
 }
 
 func (c *Endhouse) RepeatTask(t *Task) {
@@ -144,17 +149,18 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 	resp, err := req.Get(t.Executor.URL)
 
 	if err != nil {
-		log.Printf("error pushing to url %s\n", t.Executor.URL)
+		log.Printf("error pushing to url %s: %s. Resp %s\n", t.Executor.URL, err, resp)
 	}
-	log.Printf("job %s perform in %s respond %s", t.Name, time.Now().Sub(t0), resp)
-	c.Slacker.Send(fmt.Sprintf("job %s perform in %s respond %s", t.Name, time.Now().Sub(t0), resp))
+
+	log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp, resp)
+	c.Slacker.Send(fmt.Sprintf("job %s performed in %s respond status %d", t.Name, time.Now().Sub(t0), resp.StatusCode()))
 }
 
 func (c *Endhouse) Wait() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	done := make(chan bool, 1)
+	doneAll := make(chan bool, 1)
 
 	go func() {
 		// This goroutine executes a blocking receive for
@@ -168,8 +174,9 @@ func (c *Endhouse) Wait() {
 			v <- true
 		}
 
-		done <- true
+		doneAll <- true
 	}()
 
-	<-done
+	// wail until other go routing quit
+	<-doneAll
 }

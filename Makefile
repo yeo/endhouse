@@ -13,4 +13,4 @@ docker_push:
 	docker push yeospace/endhouse:$(version)
 	docker push yeospace/endhouse:latest
 
-docker_release: build docker_build docker_tag docker_push
+docker_release: docker_build docker_tag docker_push
