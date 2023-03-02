@@ -1,7 +1,12 @@
 # Endhouse
 
-Endhouse is a very simple job runner to offload parse of your job to Go
-and a framework of agnosic language job.
+GCP Cloud Run or AWS Beanstalk has a concept where youd efine schedule
+job in yaml file, Then they will parse and hit your app at those
+URL to perform job, instead of relying on a background job. Now the job
+will be process in a HTTP request to these.
+
+End house works exactly the same way. It is a very simple job runner to
+offload part of your job to Go and a framework of agnosic language job.
 
 Endhouse is battle tested at [Opty](https://getopty.com) for our
 clients.
@@ -9,7 +14,7 @@ clients.
 endhouse is name after the novel of Agatha [Peril at End
 House](https://en.wikipedia.org/wiki/Peril_at_End_House)
 
-# Getting start
+# Getting started
 
 endhouse parses job definition in a schedule.yaml file so all we need is
 ended  house binary itself and schedule file.
