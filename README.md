@@ -22,7 +22,7 @@ ended  house binary itself and schedule file.
 Create a schedule.yaml file(refer to below section for its syntax) and run
 endhouse
 
-``
+```
 # if schedule.yaml is in the current directory, simply invoke it
 endhouse
 
