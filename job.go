@@ -198,7 +198,7 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 
 					MessageText{
 						Type: "mrkdwn",
-						Text: "*Result*\nSucced",
+						Text: "*Result*\nSucceed",
 					},
 				},
 			},
