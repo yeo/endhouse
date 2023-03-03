@@ -30,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	slacker := NewSlacker(config.Notifier.Slack)
+	slacker := NewSlacker(os.ExpandEnv(config.Notifier.Slack))
 
 	c := &Endhouse{
 		Config:  config,
