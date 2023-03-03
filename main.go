@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"sync"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/robfig/cron/v3"
@@ -39,6 +40,7 @@ func main() {
 		Slacker: slacker,
 
 		done: make(map[string]chan bool),
+		lock: make(map[string]sync.Mutex),
 	}
 
 	c.Run()

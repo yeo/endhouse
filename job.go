@@ -103,6 +103,8 @@ func (c *Endhouse) Run() {
 		}
 
 		c.done[j.Name] = make(chan bool, 1)
+		c.lock[j.Name] = sync.Mutex{}
+
 		if j.Schedule.Every > 0 {
 			log.Printf("found job %s endpoint: %s schedule every: %d seconds\n", j.Name, j.Executor.URL, j.Schedule.Every)
 			go c.RepeatTask(j)
@@ -167,6 +169,9 @@ func (c *Endhouse) RepeatTask(t *Task) {
 
 func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 	log.Printf("execute task %s at %s", t.Name, t0)
+	c.lock[t.Name].Lock()
+	defer c.lock[t.Name].Unlock()
+
 	req := c.Client.R()
 
 	for k, v := range t.Executor.Headers {
