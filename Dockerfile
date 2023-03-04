@@ -4,7 +4,7 @@ WORKDIR /endhouse
 
 COPY . ./
 RUN \
-  CGO_ENABLED=0 go build -a endhouse .
+  CGO_ENABLED=0 go build -a eh .
 
 
 FROM ubuntu:jammy
@@ -15,4 +15,4 @@ RUN apt update && apt install ca-certificates -y
 
 COPY --from=builder /endhouse/endhouse /bin/
 
-CMD ["/bin/endhouse"]
+CMD ["/bin/eh"]

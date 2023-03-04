@@ -184,12 +184,23 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 
 	resp, err := req.Get(t.Executor.URL)
 
+	icon := ":bangbang:"
+
+	if resp.StatusCode() == 200 {
+		icon = ":ship:"
+	}
+
 	if err != nil {
 		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
 
-		c.Slacker.Send(fmt.Sprintf(":bangbang: error pushing to url %s: %s. Resp %s\n", t.Executor.URL, err, resp), []MessageBlock{})
+		c.Slacker.Send(fmt.Sprintf("%s error pushing to url %s: %s. Resp %s\n", icon, t.Executor.URL, err, resp), []MessageBlock{})
 	} else {
 		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
+
+		result := "*Result*\nSucceed"
+		if resp.StatusCode() != 200 {
+			result = "*Result*\nError"
+		}
 
 		sections := []MessageBlock{
 			MessageBlock{
@@ -202,7 +213,7 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 
 					MessageText{
 						Type: "mrkdwn",
-						Text: "*Result*\nSucceed",
+						Text: result,
 					},
 				},
 			},
@@ -223,7 +234,7 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 			},
 		}
 
-		c.Slacker.Send(fmt.Sprintf(":ship: job *%s* finished with resp:\n\n>%s\n", t.Name, resp), sections)
+		c.Slacker.Send(fmt.Sprintf("%s job *%s* finished with resp:\n\n>%s\n", icon, t.Name, resp), sections)
 	}
 }
 
