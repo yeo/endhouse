@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 	"time"
 
@@ -56,6 +57,7 @@ type Endhouse struct {
 	Slacker *Slacker
 
 	done map[string]chan bool
+	lock map[string]sync.Mutex
 }
 
 func (c *Endhouse) Run() {
@@ -169,8 +171,10 @@ func (c *Endhouse) RepeatTask(t *Task) {
 
 func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 	log.Printf("execute task %s at %s", t.Name, t0)
-	c.lock[t.Name].Lock()
-	defer c.lock[t.Name].Unlock()
+	lock := c.lock[t.Name]
+
+	lock.Lock()
+	defer lock.Unlock()
 
 	req := c.Client.R()
 
