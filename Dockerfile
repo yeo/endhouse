@@ -4,7 +4,7 @@ WORKDIR /endhouse
 
 COPY . ./
 RUN \
-  CGO_ENABLED=0 go build -a eh .
+  CGO_ENABLED=0 go build -o eh .
 
 
 FROM ubuntu:jammy
