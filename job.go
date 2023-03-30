@@ -76,8 +76,14 @@ func (c *Endhouse) Run() {
 
 		if j.Name == "" {
 			c.Config.Tasks[i].Name = xid.New().String()
+
 			j = c.Config.Tasks[i]
 			log.Printf("job has no name, generate random name: %s")
+		}
+
+		// expand env into header or url
+		if j.Config.Tasks[i].Name != "" {
+			j.Config.Tasks[i].Name != os.ExpandEnv(j.Config.Tasks[i].Name)
 		}
 
 		// expand env into header or url
