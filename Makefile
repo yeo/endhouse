@@ -4,13 +4,13 @@ build:
 	GOOS=linux GOARCH=amd64 go build -o out/endhouse .
 
 docker_build:
-	docker build -t r.getopty.com/endhouse:$(version) .
+	docker build -t yeospace/endhouse:$(version) .
 
 docker_tag:
-	docker tag r.getopty.com/endhouse:$(version) r.getopty.com/endhouse:latest
+	docker tag yeospace/endhouse:$(version) yeospace/endhouse:latest
 
 docker_push:
-	docker push r.getopty.com/endhouse:$(version)
-	docker push r.getopty.com/endhouse:latest
+	docker push yeospace/endhouse:$(version)
+	docker push yeospace/endhouse:latest
 
 docker_release: docker_build docker_tag docker_push
