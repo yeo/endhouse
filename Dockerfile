@@ -13,6 +13,6 @@ WORKDIR /endhouse
 
 RUN apt update && apt install ca-certificates -y
 
-COPY --from=builder /endhouse/endhouse /bin/
+COPY --from=builder /endhouse/eh /bin/
 
 CMD ["/bin/eh"]
