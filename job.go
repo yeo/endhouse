@@ -81,10 +81,7 @@ func (c *Endhouse) Run() {
 			log.Printf("job has no name, generate random name: %s")
 		}
 
-		// expand env into header or url
-		if j.Config.Tasks[i].Name != "" {
-			j.Config.Tasks[i].Name != os.ExpandEnv(j.Config.Tasks[i].Name)
-		}
+		j.Name = os.ExpandEnv(j.Name)
 
 		// expand env into header or url
 		if j.Executor.URL != "" {
