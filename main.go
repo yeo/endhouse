@@ -44,6 +44,8 @@ func main() {
 
 		done: make(map[string]chan bool),
 		lock: make(map[string]sync.Mutex),
+
+		TaskRegistry: make(map[string]*Task),
 	}
 
 	c.Client.
@@ -68,5 +70,10 @@ func main() {
 		)
 
 	c.Run()
+
+	s := NewWebServer(c)
+	s.SetupRoute()
+	go s.Run()
+
 	c.Wait()
 }

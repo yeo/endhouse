@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -58,6 +59,8 @@ type Endhouse struct {
 
 	done map[string]chan bool
 	lock map[string]sync.Mutex
+
+	TaskRegistry map[string]*Task
 }
 
 func (c *Endhouse) Run() {
@@ -109,6 +112,8 @@ func (c *Endhouse) Run() {
 
 		c.done[j.Name] = make(chan bool, 1)
 		c.lock[j.Name] = sync.Mutex{}
+
+		c.TaskRegistry[j.Name] = j
 
 		if j.Schedule.Every > 0 {
 			log.Printf("found job %s endpoint: %s schedule every: %d seconds\n", j.Name, j.Executor.URL, j.Schedule.Every)
@@ -172,7 +177,16 @@ func (c *Endhouse) RepeatTask(t *Task) {
 
 }
 
-func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
+func (c *Endhouse) ExecuteTaskByName(name string) error {
+	t, ok := c.TaskRegistry[name]
+	if !ok {
+		return errors.New(fmt.Sprintf("task %s not found", name))
+	}
+
+	return c.ExecuteTask(t, time.Now())
+}
+
+func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) error {
 	log.Printf("execute task %s at %s", t.Name, t0)
 	lock := c.lock[t.Name]
 
@@ -197,6 +211,8 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
 
 		c.Slacker.Send(fmt.Sprintf("%s error pushing to url %s: %s. Resp %s\n", icon, t.Executor.URL, err, resp), []MessageBlock{})
+
+		return err
 	} else {
 		log.Printf("job %s performed in %s respond status %d body=(%s)", t.Name, time.Now().Sub(t0), resp.StatusCode(), resp)
 
@@ -238,6 +254,7 @@ func (c *Endhouse) ExecuteTask(t *Task, t0 time.Time) {
 		}
 
 		c.Slacker.Send(fmt.Sprintf("%s job *%s* finished with resp:\n\n>%s\n", icon, t.Name, resp), sections)
+		return nil
 	}
 }
 
